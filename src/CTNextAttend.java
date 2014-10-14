@@ -1,9 +1,14 @@
+import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
+
 import javax.xml.parsers.*;
+
 import org.w3c.dom.*;
+
 import java.io.File;
 
 
@@ -28,6 +33,14 @@ public class CTNextAttend {
 		driver.findElement(By.id("form1:htmlUserId")).sendKeys(id);
 		driver.findElement(By.id("form1:htmlPassword")).sendKeys(pass);
 		driver.findElement(By.id("form1:login")).click();
+		
+		// 出欠登録へ
+		JavascriptExecutor exe = (JavascriptExecutor)driver;
+		exe.executeScript("window.clickSiteMenuItem(308,0);");
+		
+		// アラートを継続する
+		Alert alt = driver.switchTo().alert();
+		alt.accept();
 	}
 	
 	/**
