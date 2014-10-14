@@ -9,7 +9,9 @@ import javax.xml.parsers.*;
 
 import org.w3c.dom.*;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 
 
 public class CTNextAttend {
@@ -25,6 +27,26 @@ public class CTNextAttend {
 		String id="id";
 		String pass="";
 
+		// CSVファイルを読み込む
+		try {
+			BufferedReader br = new BufferedReader(new FileReader(getConfig(args[0],"attendfile")));
+			while (br.ready()) {
+				String line = br.readLine();
+				String [] sepa = line.split(",");
+				System.out.print(""+sepa.length+":");
+				for (int i=0 ; i<sepa.length ; i++) 
+				{
+					System.out.print(sepa[i]+",");
+				}
+				System.out.println("");
+			}
+		}
+		catch (Exception e) {
+			System.out.println(e.toString());
+		}
+		
+/*
+		
 		// パラメータの読み込み
 		id = getConfig(args[0],"id");
 		pass = getConfig(args[0],"pass");
@@ -41,6 +63,7 @@ public class CTNextAttend {
 		// アラートを継続する
 		Alert alt = driver.switchTo().alert();
 		alt.accept();
+		*/
 	}
 	
 	/**
