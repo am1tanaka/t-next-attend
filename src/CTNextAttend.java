@@ -31,65 +31,23 @@ public class CTNextAttend {
 	{
 		driver = new FirefoxDriver();
 		driver.get("https://next.tama.ac.jp/up/faces/login/Com00505A.jsp");
-		String id="";
-		String pass="";
+		//driver.get("http://localhost/tama/キャンパスインフォメーション_sub.html");
+		// 実行インスタンスを取得
+		exe = (JavascriptExecutor)driver;
 
 		// 履修者リストを読み込み
 		loadEntryList(getConfig(args[0],"entrylist"));
-		
-		// パラメータの読み込み
-		id = getConfig(args[0],"id");
-		pass = getConfig(args[0],"pass");
-		
-		// IDとパスワードを入力
-		driver.findElement(By.id("form1:htmlUserId")).sendKeys(id);
-		driver.findElement(By.id("form1:htmlPassword")).sendKeys(pass);
-		driver.findElement(By.id("form1:login")).click();
-		
-		// 出欠登録へ
-		exe = (JavascriptExecutor)driver;
-		exe.executeScript("window.clickSiteMenuItem(308,0);");
-		
-		// アラートを継続する
-		Alert alt = driver.switchTo().alert();
-		alt.accept();		
-		int i;
-		Object [] wins;
 
-		for (i=0 ; i<10 ; i++)
-		{
-	    	wins = driver.getWindowHandles().toArray();
-			if (wins.length > 1) {
-		    	driver.switchTo().window(wins[1].toString());
-			}
-			
-			try {
-				driver.findElement(By.id("loginId")).sendKeys(id);
-				driver.findElement(By.id("password")).sendKeys(pass);
-				driver.findElement(By.id("doLogin")).click();
-				Thread.sleep(500);
-			}
-			catch (Exception e){
-				System.out.println(e.toString());
-				continue;
-			}
-			break;
-		}
-		if (i == 10) {
-			return;
-		}
-		
-		// 講義検索
-		exe.executeScript("goPage('/SyussekiCount/start.jsp?Jump=lecturelist');");
-		exe.executeScript("void(go_search());");
-		
-		// 講義ページへ
-		exe.executeScript("void(go_nextpage('"+getConfig("","classcode")+"'));");
+		// ログインをして、次のページへ進む
+		login1();
+
+		// ウィンドウを切り替えて、ログインして講義ページへ
+		login2();
 		
 		ArrayList<String> datelist = new ArrayList<String>();
 		// CSVファイルを読み込む
 		try {
-			BufferedReader br = new BufferedReader(new FileReader(getConfig(args[0],"attendfile")));
+			BufferedReader br = new BufferedReader(new FileReader(getConfig("","attendfile")));
 			int linenum = 0;
 			int LOAD_MAX = 10;
 			for (linenum=0; br.ready() && (linenum<LOAD_MAX) ; linenum++) {
@@ -114,15 +72,13 @@ public class CTNextAttend {
 				// 行頭を飛ばす
 				if (linenum < 5) continue;
 				
-				/*
-				void(subwnd_update('tanaka','21011332','1300022600','2014/09/24','4','-1'));
-				id
-				学生学籍番号
-				classcode
-				日付
-				時限
-				コード(0=欠席 / 1=出席 / 2=遅刻 / 3=例外 / 4=早退)
-				 */
+				// void(subwnd_update('tanaka','21011332','1300022600','2014/09/24','4','-1'));
+				// id
+				// 学生学籍番号
+				// classcode
+				// 日付
+				// 時限
+				// コード(-1=未設定 / 0=欠席 / 1=出席 / 2=遅刻 / 3=例外 / 4=早退)
 				
 				// 出席登録開始
 				if (sepa[0].length() == 0) {
@@ -194,8 +150,16 @@ public class CTNextAttend {
 								""+(Integer.parseInt(getConfig("","period"))+1),
 								num);
 					}
+					
+					// TODO:動作テスト
+					break;
+					
 				}
+
 				System.out.println("");
+				// TODO:動作テスト
+				break;
+
 			}
 			
 			br.close();
@@ -204,6 +168,62 @@ public class CTNextAttend {
 			System.out.println(e.toString());
 			return;
 		}
+	}
+	
+	/**
+	 * トップ画面からログインして、警告を続けるまで
+	 */
+	private static void login1()
+	{
+		// IDとパスワードを入力
+		driver.findElement(By.id("form1:htmlUserId")).sendKeys(getConfig("","id"));
+		driver.findElement(By.id("form1:htmlPassword")).sendKeys(getConfig("","pass"));
+		driver.findElement(By.id("form1:login")).click();
+
+		// 出欠登録へ
+		exe.executeScript("window.clickSiteMenuItem(308,0);");
+		
+		// アラートを継続する
+		Alert alt = driver.switchTo().alert();
+		alt.accept();		
+	}
+	
+	/*
+	 * 2番目のログインを通して、講義を検索して出欠ページへ
+	 */
+	private static void login2()
+	{
+		int i;
+		Object [] wins;
+
+		for (i=0 ; i<10 ; i++)
+		{
+	    	wins = driver.getWindowHandles().toArray();
+			if (wins.length > 1) {
+		    	driver.switchTo().window(wins[1].toString());
+			}
+			
+			try {
+				driver.findElement(By.id("loginId")).sendKeys(getConfig("","id"));
+				driver.findElement(By.id("password")).sendKeys(getConfig("","pass"));
+				driver.findElement(By.id("doLogin")).click();
+			}
+			catch (Exception e){
+				System.out.println(e.toString());
+				continue;
+			}
+			break;
+		}
+		if (i == 10) {
+			return;
+		}
+		
+		// 講義検索
+		exe.executeScript("goPage('/SyussekiCount/start.jsp?Jump=lecturelist');");
+		exe.executeScript("void(go_search());");
+		
+		// 講義ページへ
+		exe.executeScript("void(go_nextpage('"+getConfig("","classcode")+"'));");
 	}
 	
 	/**
@@ -246,50 +266,91 @@ public class CTNextAttend {
 	 */
 	private static void subwnd_update(String id,String uid,String classcode,String dt,String period,int num)
 	{
-		String sexe = "void(subwnd_update('"+id;
+		// 日付を作成。2けた
+		String [] dtsepa = dt.split("/");
+		String querydate = dtsepa[0]+"/"+("0"+dtsepa[1]).substring(dtsepa[1].length()-1)+"/"+("0"+dtsepa[2]).substring(dtsepa[2].length()-1);
+		
+		List<WebElement> atts = driver.findElements(By.tagName("a"));
+		Boolean isClicked = false;
+		for (int i=0 ; i<atts.size() ; i++) {
+			String [] href = atts.get(i).getAttribute("href").split(",");
+			if (href.length < 5) {
+				continue;
+			}
+			
+			// 学籍番号をチェック
+			if (	(href[1].indexOf(uid) >= 0) 
+				&&	(href[3].indexOf(querydate) >=0)
+				&&	(href[4].indexOf(period) >= 0))
+			{
+				System.out.println("click "+atts.get(i).getAttribute("href"));
+				atts.get(i).click();
+				System.out.println("clicked");
+				isClicked = true;
+			}
+		}
+
+		// クリックしたので、次は選択肢
+		if (isClicked) {
+/*
+			// 時間待ち
+			try {
+				// フレームを変更
+				driver.switchTo().frame("frmSub_content");
+				Thread.sleep(200);
+				
+				// 選択肢を調整
+				Select sel = new Select(driver.findElement(By.name("sstatus")));
+				sel.selectByValue(""+num);
+				
+				Thread.sleep(200);
+
+				exe.executeScript("window.go();");
+*/
+/*
+				// 実行
+				List<WebElement> btns = driver.findElements(By.tagName("img"));
+				for (int j=0 ; j<btns.size() ; j++) {
+					if (btns.get(j).getAttribute("src").indexOf("images/btn_change_f1.gif") != -1)
+					{
+						System.out.print(":click");
+						Actions builder = new Actions(driver);
+						builder.click(btns.get(j));
+						builder.build().perform();
+						//btns.get(j).click();
+						break;
+					}
+				}
+				
+				Thread.sleep(5000);
+*/
+/*
+			} catch (Exception e) 
+			{
+				System.out.println("sleep switch :"+e.toString());
+			}
+			
+			driver.switchTo().defaultContent();
+*/		
+		}
+		else 
+		{
+			// 見つからなかったので、次のページへ
+			
+		}
+		
+		/*
+		String sexe = "subwnd_update('"+id;
 		sexe += "','"+uid;
 		sexe += "','"+classcode;
 		sexe += "','"+dt;
 		sexe += "','"+period;
-		sexe += "','"+num+"'));";
-		exe.executeScript(sexe);
-		System.out.println("exe:"+sexe);
-
-		// 時間待ち
-		try {
-			// フレームを変更
-			driver.switchTo().frame("frmSub_content");
-			Thread.sleep(200);
-			
-			// 選択肢を調整
-			Select sel = new Select(driver.findElement(By.name("sstatus")));
-			sel.selectByValue(""+num);
-			
-			Thread.sleep(200);
-
-			//exe.executeScript("window.go();");
-			
-			// 実行
-			List<WebElement> btns = driver.findElements(By.tagName("img"));
-			for (int j=0 ; j<btns.size() ; j++) {
-				if (btns.get(j).getAttribute("src").indexOf("images/btn_change_f1.gif") != -1)
-				{
-					System.out.print(":click");
-					Actions builder = new Actions(driver);
-					builder.click(btns.get(j));
-					builder.build().perform();
-					//btns.get(j).click();
-					break;
-				}
-			}
-			
-			Thread.sleep(5000);
-		} catch (Exception e) 
-		{
-			System.out.println("sleep switch :"+e.toString());
-		}
+		sexe += "','-1');";
 		
-		driver.switchTo().defaultContent();
+		System.out.println("exe:"+sexe);		
+
+		exe.executeScript(sexe);
+		*/
 	}
 
 	
