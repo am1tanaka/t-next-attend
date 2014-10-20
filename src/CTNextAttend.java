@@ -26,6 +26,7 @@ public class CTNextAttend {
 	private static WebDriver driver;
 	private static JavascriptExecutor exe;
 	private static ArrayList<String> entry = new ArrayList<String>();
+	private static int iCheckingIndex = 0;
 	
 	public static void main(String[] args)
 	{
@@ -84,7 +85,7 @@ public class CTNextAttend {
 				if (sepa[0].length() == 0) {
 					continue;
 				}
-				System.out.print("学籍番号="+sepa[0]+":");
+				System.out.println("学籍番号="+sepa[0]);
 				
 				// 有効チェック
 				Boolean isval = false;
@@ -125,7 +126,7 @@ public class CTNextAttend {
 						catch (Exception ee)
 						{}
 					}
-					System.out.print(""+num);
+					System.out.println("="+num);
 					
 					// 登録処理
 					subwnd_update(
@@ -272,7 +273,11 @@ public class CTNextAttend {
 		
 		List<WebElement> atts = driver.findElements(By.tagName("a"));
 		Boolean isClicked = false;
-		for (int i=0 ; i<atts.size() ; i++) {
+		for (int i=iCheckingIndex,loop=0 ; loop<atts.size() ; loop++,i++) {
+			if (i >= atts.size()) {
+				i = 0;
+			}
+			
 			String [] href = atts.get(i).getAttribute("href").split(",");
 			if (href.length < 5) {
 				continue;
@@ -283,9 +288,10 @@ public class CTNextAttend {
 				&&	(href[3].indexOf(querydate) >=0)
 				&&	(href[4].indexOf(period) >= 0))
 			{
-				System.out.println("click "+atts.get(i).getAttribute("href"));
+				System.out.print("click "+atts.get(i).getAttribute("href"));
+				iCheckingIndex = i+1;
 				atts.get(i).click();
-				System.out.println("clicked");
+				System.out.println("-clicked");
 				isClicked = true;
 				break;
 			}
@@ -316,9 +322,9 @@ public class CTNextAttend {
 				for (int j=0 ; j<btns.size() ; j++) {
 					if (btns.get(j).getAttribute("src").indexOf("images/btn_change_f1.gif") != -1)
 					{
-						System.out.print(":click");
+						System.out.print("click get("+j+")");
 						btns.get(j).click();
-						System.out.print(":clicked");						
+						System.out.println("-clicked");						
 						break;
 					}
 				}
