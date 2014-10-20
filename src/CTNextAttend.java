@@ -152,13 +152,13 @@ public class CTNextAttend {
 					}
 					
 					// TODO:動作テスト
-					break;
+					//break;
 					
 				}
 
 				System.out.println("");
 				// TODO:動作テスト
-				break;
+				//break;
 
 			}
 			
@@ -292,46 +292,47 @@ public class CTNextAttend {
 
 		// クリックしたので、次は選択肢
 		if (isClicked) {
-/*
 			// 時間待ち
 			try {
 				// フレームを変更
 				driver.switchTo().frame("frmSub_content");
-				Thread.sleep(200);
+				//Thread.sleep(200);
 				
 				// 選択肢を調整
-				Select sel = new Select(driver.findElement(By.name("sstatus")));
+				WebElement sstatus = driver.findElement(By.name("sstatus"));
+				System.out.println("sstatus="+sstatus.toString());
+				Select sel = new Select(sstatus);
+				// TODO:強制設定
+				//num = 0;
 				sel.selectByValue(""+num);
 				
-				Thread.sleep(200);
+				//Thread.sleep(200);
 
-				exe.executeScript("window.go();");
-*/
-/*
+				//exe.executeScript("window.go();");
+
+				//Thread.sleep(200);
 				// 実行
 				List<WebElement> btns = driver.findElements(By.tagName("img"));
 				for (int j=0 ; j<btns.size() ; j++) {
 					if (btns.get(j).getAttribute("src").indexOf("images/btn_change_f1.gif") != -1)
 					{
 						System.out.print(":click");
-						Actions builder = new Actions(driver);
-						builder.click(btns.get(j));
-						builder.build().perform();
-						//btns.get(j).click();
+						
+						//Actions builder = new Actions(driver);
+						//builder.click(btns.get(j));
+						//builder.build().perform();
+						btns.get(j).click();
 						break;
 					}
 				}
 				
-				Thread.sleep(5000);
-*/
-/*
+				//Thread.sleep(5000);
 			} catch (Exception e) 
 			{
 				System.out.println("sleep switch :"+e.toString());
 			}
 			
 			driver.switchTo().defaultContent();
-*/		
 		}
 		else 
 		{
