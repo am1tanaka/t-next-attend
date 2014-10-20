@@ -49,7 +49,7 @@ public class CTNextAttend {
 		try {
 			BufferedReader br = new BufferedReader(new FileReader(getConfig("","attendfile")));
 			int linenum = 0;
-			int LOAD_MAX = 10;
+			int LOAD_MAX = 1000;
 			for (linenum=0; br.ready() && (linenum<LOAD_MAX) ; linenum++) {
 				// 学籍番号まで飛ばす
 				String line = br.readLine();
@@ -278,7 +278,7 @@ public class CTNextAttend {
 				continue;
 			}
 			
-			// 学籍番号をチェック
+			// 学籍番号と日付と時限が一致していたらクリック
 			if (	(href[1].indexOf(uid) >= 0) 
 				&&	(href[3].indexOf(querydate) >=0)
 				&&	(href[4].indexOf(period) >= 0))
@@ -287,6 +287,7 @@ public class CTNextAttend {
 				atts.get(i).click();
 				System.out.println("clicked");
 				isClicked = true;
+				break;
 			}
 		}
 
@@ -300,7 +301,7 @@ public class CTNextAttend {
 				
 				// 選択肢を調整
 				WebElement sstatus = driver.findElement(By.name("sstatus"));
-				System.out.println("sstatus="+sstatus.toString());
+				//System.out.println("sstatus="+sstatus.toString());
 				Select sel = new Select(sstatus);
 				// TODO:強制設定
 				//num = 0;
@@ -310,18 +311,14 @@ public class CTNextAttend {
 
 				//exe.executeScript("window.go();");
 
-				//Thread.sleep(200);
 				// 実行
 				List<WebElement> btns = driver.findElements(By.tagName("img"));
 				for (int j=0 ; j<btns.size() ; j++) {
 					if (btns.get(j).getAttribute("src").indexOf("images/btn_change_f1.gif") != -1)
 					{
 						System.out.print(":click");
-						
-						//Actions builder = new Actions(driver);
-						//builder.click(btns.get(j));
-						//builder.build().perform();
 						btns.get(j).click();
+						System.out.print(":clicked");						
 						break;
 					}
 				}
@@ -339,19 +336,6 @@ public class CTNextAttend {
 			// 見つからなかったので、次のページへ
 			
 		}
-		
-		/*
-		String sexe = "subwnd_update('"+id;
-		sexe += "','"+uid;
-		sexe += "','"+classcode;
-		sexe += "','"+dt;
-		sexe += "','"+period;
-		sexe += "','-1');";
-		
-		System.out.println("exe:"+sexe);		
-
-		exe.executeScript(sexe);
-		*/
 	}
 
 	
