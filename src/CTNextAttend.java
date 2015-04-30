@@ -306,6 +306,15 @@ public class CTNextAttend {
 				//Thread.sleep(200);
 				
 				// 選択肢を調整
+				List<WebElement> sstas = null;
+				do {
+					sstas = driver.findElements(By.name("sstatus"));
+					if (sstas.size() == 0) {
+						Thread.sleep(100);
+					}
+				}
+				while (sstas.size() == 0);
+				
 				WebElement sstatus = driver.findElement(By.name("sstatus"));
 				//System.out.println("sstatus="+sstatus.toString());
 				Select sel = new Select(sstatus);
